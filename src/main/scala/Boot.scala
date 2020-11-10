@@ -1,43 +1,35 @@
-import java.awt.image.BufferedImage
+import akka.actor.ActorSystem
+import com.typesafe.config.ConfigFactory
+import grpc.GrpcServer
+import http.HttpServer
+import service.BFS
+import service.BFS.Point
 
-import javax.imageio.ImageIO
+import scala.concurrent.ExecutionContext
 
-object Boot extends App {
+object Boot {
 
-  val bufferedImage: BufferedImage = ImageIO.read(getClass.getResource("maze.jpg"))
+  def main(args: Array[String]): Unit = {
+    val config = ConfigFactory.load().withFallback(ConfigFactory.defaultApplication())
 
-  var array = Array.ofDim[Int](bufferedImage.getHeight(), bufferedImage.getWidth())
+    implicit val actorSystem: ActorSystem           = ActorSystem("labyrinth", config)
+    implicit val executionContext: ExecutionContext = actorSystem.dispatcher
 
-  for {
-    h <- 0 until bufferedImage.getHeight()
-    w <- 0 until bufferedImage.getWidth()
-  } {
-    val color = bufferedImage.getRGB(w, h)
+    val mat = Array(
+            Array(1, 0, 1, 1, 1, 1, 0, 1, 1, 1),
+            Array(1, 0, 1, 0, 1, 1, 1, 0, 1, 1),
+            Array(1, 1, 1, 0, 1, 1, 0, 1, 0, 1),
+            Array(0, 0, 0, 0, 1, 0, 0, 0, 0, 1),
+            Array(1, 1, 1, 0, 1, 1, 1, 0, 1, 0),
+            Array(1, 0, 1, 1, 1, 1, 0, 1, 0, 0),
+            Array(1, 0, 0, 0, 0, 0, 0, 0, 0, 1),
+            Array(1, 0, 1, 1, 1, 1, 0, 1, 1, 1),
+            Array(1, 1, 0, 0, 0, 0, 1, 0, 0, 1)
+          )
 
-    /*
-     * Right, shift to the beginning position of each color i.e. 24 for alpha 16 for red, etc.
-     * The shift right operation may impact the values of other channels,
-      to avoid this, you need to perform bitwise and operation with 0Xff.
-      This masks the variable leaving the last 8 bits and ignoring all the rest of the bits.
-     */
+    println(new BFS().bfs(mat, Point(0, 0), Point(3, 4)))
 
-    val (red, green, blue) = ((color >> 16) & 0xff, (color >> 8) & 0xff, color & 0xff)
-
-    array(h)(w) = if ((red + green + blue) / 3 >= 128) 0 else 1
+    new HttpServer(config).run()
   }
-
-  array = array
-    .foldLeft(Array.empty[Array[Int]]) {
-      case (acc, arr) if acc.nonEmpty && acc.last.sameElements(arr) => acc
-      case (acc, arr)                                               => acc :+ arr
-    }
-    .transpose
-    .foldLeft(Array.empty[Array[Int]]) {
-      case (acc, arr) if acc.nonEmpty && acc.last.sameElements(arr) => acc
-      case (acc, arr)                                               => acc :+ arr
-    }
-    .transpose
-
-  println(array.map(_.mkString).mkString("\n"))
 
 }
