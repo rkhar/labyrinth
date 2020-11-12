@@ -2,6 +2,7 @@ package service
 
 import java.io.File
 
+import com.typesafe.config.Config
 import io.circe.Json
 import io.circe.syntax.EncoderOps
 import org.slf4j.{Logger, LoggerFactory}
@@ -12,20 +13,19 @@ object MazeConverterService {
   case class ConvertImageToMatrixResponse(status: String = "ok", matrix: Array[Array[Int]])
 }
 
-class MazeConverterService() {
+class MazeConverterService(config: Config) {
+  val path: String = config.getString("http.interface") + config.getString("http.port") + "/labyrinth/images/"
 
   val log: Logger = LoggerFactory.getLogger(getClass.getSimpleName)
 
   def convertImageToMatrix(file: File): Array[Array[Int]] = {
     val array = ImageConverter.convertImageToMatrix(file)
-    log.info(s"array: \n ${array.map(_.mkString).mkString("\n")}")
     file.delete()
     array
   }
 
   def convertImageToMatrixAndOptimize(file: File): Array[Array[Int]] = {
     val array = ImageConverter.optimizeMatrix(ImageConverter.convertImageToMatrix(file))
-    log.info(s"array: \n ${array.map(_.mkString).mkString("\n")}")
     file.delete()
     array
   }
@@ -33,7 +33,7 @@ class MazeConverterService() {
   def convertImageToBlackAndWhite(file: File): Json = {
     val convertedImage = ImageConverter.convertImageToBlackAndWhite(file)
     file.delete()
-    ("http://localhost:8080/labyrinth/images/" + convertedImage.getName).asJson
+    (path + convertedImage.getName).asJson
   }
 
   def convertImageToOptimizedImage(file: File): Json = {
@@ -42,18 +42,18 @@ class MazeConverterService() {
     val optimizedMatrix    = ImageConverter.optimizeMatrix(matrix)
     val optimizedImage     = ImageConverter.convertMatrixToImage(optimizedMatrix)
     file.delete()
-    ("http://localhost:8080/labyrinth/images/" + optimizedImage.getName).asJson
+    (path + optimizedImage.getName).asJson
   }
 
   def drawPath(file: File, coordinates: List[(Int, Int)]): Json = {
     val newImage = ImageConverter.drawAPath(file, coordinates)
     file.delete()
-    ("http://localhost:8080/labyrinth/images/" + newImage.getName).asJson
+    (path + newImage.getName).asJson
   }
 
   def convertMatrixToImage(matrix: Array[Array[Int]]): Json = {
     val file     = ImageConverter.convertMatrixToImage(matrix)
     val fileName = file.getName.split("\\.")(0)
-    ("http://localhost:8080/labyrinth/images/" + fileName + ".jpeg").asJson
+    (path + fileName + ".jpeg").asJson
   }
 }

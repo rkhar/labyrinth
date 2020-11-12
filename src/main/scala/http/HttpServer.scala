@@ -14,10 +14,10 @@ import scala.util.{Failure, Success}
 class HttpServer(config: Config)(
     implicit actorSystem: ActorSystem,
     executionContext: ExecutionContext
-) {
+) extends CustomRejectionHandlers {
   val log: Logger = LoggerFactory.getLogger(getClass.getSimpleName)
 
-  val routes: Route = new HttpRoutes().routes
+  val routes: Route = new HttpRoutes(config).routes
 
   def run(): Unit =
     Http().bindAndHandle(routes, config.getString("http.interface"), config.getInt("http.port")).onComplete {

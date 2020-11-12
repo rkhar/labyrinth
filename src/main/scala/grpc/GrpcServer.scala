@@ -4,6 +4,7 @@ import akka.Done
 import akka.actor.{ActorSystem, CoordinatedShutdown}
 import akka.grpc.scaladsl.{ServerReflection, ServiceHandler}
 import akka.http.scaladsl.{Http, HttpConnectionContext}
+import com.typesafe.config.Config
 import labyrinth.customers.grpc.{CustomersGrpcService, CustomersGrpcServiceHandler}
 import labyrinth.sellers.grpc.{SellersGrpcService, SellersGrpcServiceHandler}
 import org.slf4j.{Logger, LoggerFactory}
@@ -13,7 +14,7 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
-class GrpcServer()(implicit actorSystem: ActorSystem, executionContext: ExecutionContext) {
+class GrpcServer(config: Config)(implicit actorSystem: ActorSystem, executionContext: ExecutionContext) {
 
   val log: Logger = LoggerFactory.getLogger(getClass.getSimpleName)
 
@@ -30,8 +31,8 @@ class GrpcServer()(implicit actorSystem: ActorSystem, executionContext: Executio
     Http()
       .bindAndHandleAsync(
         serviceHandler,
-        interface = "127.0.0.1",
-        port = 8081,
+        interface = config.getString("grpc.interface"),
+        port = config.getInt("grpc.port"),
         connectionContext = HttpConnectionContext()
       )
       .onComplete {

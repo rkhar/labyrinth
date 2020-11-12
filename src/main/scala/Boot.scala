@@ -2,7 +2,6 @@ import akka.actor.ActorSystem
 import com.typesafe.config.ConfigFactory
 import grpc.GrpcServer
 import http.HttpServer
-import model.schema.CustomersSchema.Customer
 import org.slf4j.LoggerFactory
 import repository.{CustomerRepository, SellerRepository}
 import service.{CustomerService, SellerService}
@@ -21,20 +20,6 @@ object Boot {
     implicit val actorSystem: ActorSystem           = ActorSystem("labyrinth", config)
     implicit val executionContext: ExecutionContext = actorSystem.dispatcher
 
-//    val mat = Array(
-//      Array(0, 1, 0, 0, 0, 0, 1, 0, 0, 0),
-//      Array(0, 1, 0, 1, 0, 0, 0, 1, 0, 0),
-//      Array(0, 0, 0, 1, 0, 0, 1, 0, 1, 0),
-//      Array(1, 1, 1, 1, 0, 1, 1, 1, 1, 0),
-//      Array(0, 0, 0, 1, 0, 0, 0, 1, 0, 1),
-//      Array(0, 1, 0, 0, 0, 0, 1, 0, 1, 1),
-//      Array(0, 1, 1, 1, 1, 1, 1, 1, 1, 0),
-//      Array(0, 1, 0, 0, 0, 0, 1, 0, 0, 0),
-//      Array(0, 0, 1, 1, 1, 1, 0, 1, 1, 0)
-//    )
-
-//    println(new BFS().bfs(mat, Point(0, 0), Point(3, 4)))
-
     val db: H2Profile.backend.Database = Database.forConfig("mydb")
     val customerRepository             = new CustomerRepository(db)
     customerRepository.createSchemaIfNotExists().onComplete {
@@ -51,14 +36,7 @@ object Boot {
     val customerService = new CustomerService(customerRepository)
     val sellerService   = new SellerService(sellerRepository)
 
-//    customerRepository.deleteCustomerById(1)
-
-//    customerRepository.createCustomer(Customer(1, "Rassul", "Khar", 24, "kz", "ala")).onComplete {
-//      case Success(value)     => log.info(s"value: $value")
-//      case Failure(exception) => log.error(s"value: $exception")
-//    }
-
-    new GrpcServer().run(customerService, sellerService)
+    new GrpcServer(config).run(customerService, sellerService)
     new HttpServer(config).run()
   }
 
