@@ -32,6 +32,7 @@ class HttpServer(config: Config)(
               Done
             }
           }
+
       case Failure(ex) =>
         log.error("Failed to bind HTTP endpoint, terminating system", ex)
         actorSystem.terminate()

@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "labyrinth.sellers.grpc";
+option java_outer_classname = "sellersProto";
+
+package sellers;
+
+service SellersGrpcService {
+  rpc CreateSeller(CreateSellerRequest) returns(CommonResponse);
+
+  rpc GetSellerById(GetSellerByIdRequest) returns(CommonResponse);
+
+  rpc DeleteSellerById(DeleteSellerByIdRequest) returns(CommonResponse);
+}
+
+message CreateSellerRequest {
+  int32 id = 1;
+  string firstName = 2;
+  string secondName = 3;
+  int32 age = 4;
+  string country = 5;
+  string city = 6;
+}
+
+message GetSellerByIdRequest {
+  int32 id = 1;
+}
+
+message DeleteSellerByIdRequest {
+  int32 id = 1;
+}
+
+message CommonResponse {
+  int32 status = 1;
+  string message = 2;
+}

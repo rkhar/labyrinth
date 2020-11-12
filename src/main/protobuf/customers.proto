@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "labyrinth.customers.grpc";
+option java_outer_classname = "customersProto";
+
+package customers;
+
+service CustomersGrpcService {
+  rpc CreateCustomer(CreateCustomerRequest) returns(CommonResponse);
+
+  rpc GetCustomerById(GetCustomerByIdRequest) returns(CommonResponse);
+
+  rpc DeleteCustomerById(DeleteCustomerByIdRequest) returns(CommonResponse);
+}
+
+message CreateCustomerRequest {
+  int32 id = 1;
+  string firstName = 2;
+  string secondName = 3;
+  int32 age = 4;
+  string country = 5;
+  string city = 6;
+}
+
+message GetCustomerByIdRequest {
+  int32 id = 1;
+}
+
+message DeleteCustomerByIdRequest {
+  int32 id = 1;
+}
+
+message CommonResponse {
+  int32 status = 1;
+  string message = 2;
+}
